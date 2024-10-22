@@ -1,21 +1,32 @@
+/* eslint-disable react/prop-types */
+import { useState } from "react";
+import "../styles/CheckBox.scss";
 
-import "../styles/CheckBox.scss"
+const CheckBox = ({ onStatusChange }) => {
+  const [isActive, setIsActive] = useState(false);
 
-const CheckBox = () => {
-    return (
-        <div className="checkbox-wrapper-42">
-            <input
-                id="cbx-42"
-                type="checkbox"
-                // checked={checked}
-                // onChange={handleCheckboxChange}
-            />
-            <label className="cbx" htmlFor="cbx-42"></label>
-            <label className="lbl is-active" htmlFor="cbx-42">
-                Is Active
-            </label>
-        </div>
-    )
-}
+  const handleCheckboxChange = () => {
+    const newStatus = !isActive;
+    setIsActive(newStatus);
+    onStatusChange(newStatus ? 'Active' : 'Inactive');
+  };
 
-export default CheckBox
+  return (
+    <div className="checkbox-wrapper-42">
+      <input
+        id="cbx-42"
+        type="checkbox"
+        checked={isActive}
+        onChange={handleCheckboxChange}
+      />
+      <label className="cbx" htmlFor="cbx-42"></label>
+      <label
+        className={`lbl ${isActive ? 'Active' : 'Inactive'}` }
+        htmlFor="cbx-42">
+        {isActive ? 'Active' : 'Inactive'}
+      </label>
+    </div>
+  );
+};
+
+export default CheckBox;
