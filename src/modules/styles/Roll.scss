@@ -1,0 +1,71 @@
+.input-info {
+    padding: 0px 20px 0px 20px;
+    height: 45px;
+    border-radius: 50px;
+    border: 2px solid #7e77e0;
+    width: 100%;
+    outline: none;
+    box-sizing: border-box;
+
+    &:focus {
+        border: 2px solid #574bff !important;
+        box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+    }
+
+}
+
+.css-6vxf02-MuiButtonBase-root-MuiFab-root {
+    height: 45px !important;
+    width: 45px !important;
+    background-color: #7e77e0 !important;
+}
+
+.title-roll {
+    color: white;
+    font-size: 70px !important;
+}
+
+.title-add {
+    color: #7e77e0; /* Màu tím ban đầu */
+    font-weight: bold; /* Tạo độ đậm cho văn bản */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); /* Bóng đổ nhẹ để tạo chiều sâu */
+    background: linear-gradient(90deg, #7e77e0, #a29bfe);
+    -webkit-background-clip: text;
+    color: transparent; 
+  
+    /* Hiệu ứng hover với transition */
+    transition: transform 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
+  
+    &:hover {
+      color: #4834d4; /* Màu khác khi hover */
+      text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3); 
+      transform: scale(1.01); 
+    }
+  
+    animation: glow 1s ease-in-out infinite alternate;
+  
+    @keyframes glow {
+      0% {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2), 0 0 10px #7e77e0, 0 0 20px #7e77e0;
+      }
+      100% {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2), 0 0 20px #a29bfe, 0 0 30px #a29bfe;
+      }
+    }
+  }
+  
+
+.is-active {
+    color: white;
+    margin-left: 12px !important;
+}
+
+.absent-banner {
+  height: 40px !important;
+  width: 50px;
+}
+
+.banner-container {
+  display: flex !important;
+  align-items: start !important;
+}
