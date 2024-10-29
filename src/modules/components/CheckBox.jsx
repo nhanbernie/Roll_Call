@@ -8,7 +8,7 @@ const CheckBox = ({ onStatusChange }) => {
   const handleCheckboxChange = () => {
     const newStatus = !isActive;
     setIsActive(newStatus);
-    onStatusChange(newStatus ? 'Active' : 'Inactive');
+    onStatusChange(newStatus); 
   };
 
   return (
@@ -21,8 +21,9 @@ const CheckBox = ({ onStatusChange }) => {
       />
       <label className="cbx" htmlFor="cbx-42"></label>
       <label
-        className={`lbl ${isActive ? 'Active' : 'Inactive'}` }
-        htmlFor="cbx-42">
+        className={`lbl ${isActive ? 'Active' : 'Inactive'}`}
+        htmlFor="cbx-42"
+      >
         {isActive ? 'Active' : 'Inactive'}
       </label>
     </div>

@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchStudentsRequest, createStudentRequest } from "../../redux/actions/action"
 import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
@@ -12,21 +14,31 @@ import RollTable from './RollTable';
 const Roll = () => {
   const [studentName, setStudentName] = useState('');
   const [studentCode, setStudentCode] = useState('');
-  const [studentStatus, setStudentStatus] = useState('Inactive'); 
+  const [studentStatus, setStudentStatus] = useState(false); 
 
-  const [students, setStudents] = useState([
-    { name: 'Nguyen Van A', code: 'CODE12345', fat: 6.0, carbs: 24, protein: 4.0, status: 'Active' },
-    { name: 'Tran Van B', code: 'CODE67890', fat: 9.0, carbs: 37, protein: 4.3, status: 'Inactive' }
-  ]);
+  const dispatch = useDispatch();
+  
+  const students = useSelector((state) => state.student.students);
+  useEffect(() => {
+    dispatch(fetchStudentsRequest()); 
+  }, [dispatch]);
 
   const addStudent = () => {
+    console.log('Student Status:', studentStatus);
     if (studentName && studentCode) {
-      const newStudent = { name: studentName, code: studentCode, fat: 0, carbs: 0, protein: 0, status: studentStatus };
-      setStudents([newStudent, ...students]);
+      const newStudent = { 
+        name: studentName, 
+        studentCode: studentCode, 
+        isActive: studentStatus 
+      };
+      dispatch(createStudentRequest(newStudent))
+      // setStudents([
+      //   newStudent, 
+      //   ...students
+      // ]);
       setStudentName(''); 
       setStudentCode('');
-      setStudentStatus('Inactive'); 
-      alert('Add successfully');
+      setStudentStatus(false); 
     } else {
       alert('Please enter Name and Code');
     }
@@ -69,6 +81,7 @@ const Roll = () => {
             <CheckBox onStatusChange={(status) => setStudentStatus(status)} />
           </Box>
         </Grid>
+        {/* end input */}
 
 
         <Grid xs={1}>
@@ -79,9 +92,8 @@ const Roll = () => {
           </Box>
         </Grid>
 
-
         <Grid xs={12} mt={5}>
-          <RollTable students={students} setStudents={setStudents} /> 
+          <RollTable students={students.slice().reverse()} /> 
         </Grid>
       </Grid>
     </Container>

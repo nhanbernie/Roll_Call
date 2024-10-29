@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -6,13 +5,16 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import Chip from '@mui/material/Chip'; 
-import Checkbox from '@mui/material/Checkbox'; 
-import Button from '@mui/material/Button'; 
-import { useState } from 'react';
+import Chip from '@mui/material/Chip';
+import Checkbox from '@mui/material/Checkbox';
+import Button from '@mui/material/Button';
+import { useEffect, useState } from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import "../styles/RollTable.scss";
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from 'react-redux';
+import { deleteStudentRequest, updateStudentRequest } from "../../redux/actions/action";
 
 const darkTheme = createTheme({
   palette: {
@@ -22,47 +24,79 @@ const darkTheme = createTheme({
 
 const RollTable = ({ students, setStudents }) => {
   const [selectedStudents, setSelectedStudents] = useState([]);
-  const [editingStudent, setEditingStudent] = useState(null); 
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState(null);
+  
+  // State cho từng biến tên và trạng thái
+  const [studentName, setStudentName] = useState('');
+  const [studentStatus, setStudentStatus] = useState('');
 
-  const handleSelectStudent = (studentCode) => {
-    if (selectedStudents.includes(studentCode)) {
-      setSelectedStudents(selectedStudents.filter((code) => code !== studentCode)); 
+  const [editingStudent, setEditingStudent] = useState(null);
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const handleView = (studentId) => {
+    navigate(`/student/${studentId}`);
+  };
+
+  const handleSelectStudent = (studentId) => {
+    if (selectedStudents.includes(studentId)) {
+      setSelectedStudents(selectedStudents.filter((id) => id !== studentId));
     } else {
-      setSelectedStudents([...selectedStudents, studentCode]); 
+      setSelectedStudents([...selectedStudents, studentId]);
     }
   };
 
   const deleteSelectedStudents = () => {
-    const remainingStudents = students.filter((student) => !selectedStudents.includes(student.code));
-    setStudents(remainingStudents); 
-    setSelectedStudents([]); 
+    const remainingStudents = students.filter((student) => !selectedStudents.includes(student._id));
+    setStudents(remainingStudents);
+    setSelectedStudents([]);
   };
 
-  const deleteSingleStudent = (studentCode) => {
-    if (selectedStudents.includes(studentCode)) {
-      const remainingStudents = students.filter((student) => student.code !== studentCode);
-      setStudents(remainingStudents);
-      setSelectedStudents(selectedStudents.filter((code) => code !== studentCode)); 
+  const openDeleteConfirm = (studentId) => {
+    setStudentToDelete(studentId);
+    setOpenDeleteDialog(true);
+  };
+
+  const deleteSingleStudent = (studentId) => {
+    if (selectedStudents.includes(studentId)) {
+      openDeleteConfirm(studentId);
     } else {
-      alert('Please select the student before deleting.'); 
+      alert('Please select the student before deleting.');
     }
   };
 
-  const editStudent = (studentCode) => {
-    const student = students.find((s) => s.code === studentCode);
+  const confirmDeleteStudent = () => {
+    dispatch(deleteStudentRequest(studentToDelete));
+    setOpenDeleteDialog(false);
+    setStudentToDelete(null);
+  };
+
+  const editStudent = (student) => {
     setEditingStudent(student);
+    setStudentName(student.name);
+    setStudentStatus(student.isActive ? 'Active' : 'Absent');
+    setOpenEditDialog(true);
   };
 
-  const saveEditStudent = () => {
-    const updatedStudents = students.map((student) =>
-      student.code === editingStudent.code ? editingStudent : student
-    );
-    setStudents(updatedStudents);
-    setEditingStudent(null); 
+  const handleEditDialogClose = () => {
+    setOpenEditDialog(false);
+    setEditingStudent(null);
   };
 
-  const cancelEdit = () => {
-    setEditingStudent(null); 
+  const handleSubmit = () => {
+    const updatedData = {
+      name: studentName,
+      isActive: studentStatus === 'Active',
+    };
+
+    console.log(updatedData);
+    console.log(editingStudent._id);
+
+    dispatch(updateStudentRequest(editingStudent._id, updatedData));
+    handleEditDialogClose();
   };
 
   return (
@@ -74,13 +108,14 @@ const RollTable = ({ students, setStudents }) => {
         <Button
           variant="contained"
           color="secondary"
-          disabled={selectedStudents.length === 0} 
+          disabled={selectedStudents.length === 0}
           onClick={deleteSelectedStudents}
         >
           Delete Selected
         </Button>
       </Box>
 
+      {/* TABLE */}
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
@@ -94,67 +129,105 @@ const RollTable = ({ students, setStudents }) => {
           </TableHead>
           <TableBody>
             {students.map((student) => (
-              <TableRow key={student.code} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+              <TableRow
+                key={student._id}
+                className='row-table'
+                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                 <TableCell align="left">
                   <Checkbox
-                    checked={selectedStudents.includes(student.code)}
-                    onChange={() => handleSelectStudent(student.code)}
+                    checked={selectedStudents.includes(student._id)}
+                    onChange={() => handleSelectStudent(student._id)}
                   />
                 </TableCell>
 
-                <TableCell component="th" scope="row">
-                  {editingStudent?.code === student.code ? (
-                    <input
-                      value={editingStudent.name}
-                      onChange={(e) => setEditingStudent({ ...editingStudent, name: e.target.value })}
-                    />
-                  ) : (
-                    student.name
-                  )}
+                {/* STUDENT NAME */}
+                <TableCell component="th" scope="row" onClick={() => handleView(student._id)}>
+                  {student.name}
                 </TableCell>
 
-                <TableCell align="left">
-                  {editingStudent?.code === student.code ? (
-                    <input
-                      value={editingStudent.code}
-                      onChange={(e) => setEditingStudent({ ...editingStudent, code: e.target.value })}
-                    />
-                  ) : (
-                    student.code
-                  )}
+                {/* STUDENT CODE */}
+                <TableCell align="left" onClick={() => handleView(student._id)}>
+                  {student.studentCode}
                 </TableCell>
 
+                {/* ACTIVE */}
                 <TableCell align="left">
                   <Chip
-                    label={student.status}
-                    color={student.status === 'Active' ? 'success' : 'default'}
+                    label={student.isActive ? 'Active' : 'Absent'}
+                    color={student.isActive ? 'success' : 'default'}
                     variant="outlined"
                   />
                 </TableCell>
 
+                {/* ACTION */}
                 <TableCell align="left">
-                  {editingStudent?.code === student.code ? (
-                    <>
-                      <Button onClick={saveEditStudent}>Save</Button>
-                      <Button onClick={cancelEdit}>Cancel</Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button onClick={() => editStudent(student.code)}>Edit</Button>
-                      <Button
-                        color="secondary"
-                        onClick={() => deleteSingleStudent(student.code)}
-                      >
-                        Delete
-                      </Button>
-                    </>
-                  )}
+                  <Button onClick={() => editStudent(student)}>Edit</Button>
+                  <Button color="secondary" onClick={() => deleteSingleStudent(student._id)}>
+                    Delete
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Edit Student Dialog */}
+      <Dialog open={openEditDialog} onClose={handleEditDialogClose}>
+        <DialogTitle>Edit Student</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Please update the fields below and click "Save" to save your changes.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Name"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={studentName}
+            onChange={(e) => setStudentName(e.target.value)}
+          />
+          <FormControl fullWidth variant="outlined" margin="dense">
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={studentStatus}
+              onChange={(e) => setStudentStatus(e.target.value)}
+              label="Status"
+            >
+              <MenuItem value="Active">Active</MenuItem>
+              <MenuItem value="Absent">Absent</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleEditDialogClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this student?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDeleteDialog(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={confirmDeleteStudent} color="secondary">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </ThemeProvider>
   );
 };
